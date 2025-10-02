@@ -1,8 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from fpdf import FPDF
 import io
 
 st.set_page_config(page_title="Body na kružnici", page_icon="⭕")
@@ -41,26 +40,27 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("Informace o autorovi")
 st.sidebar.write("**Autor:** Jakub Říman")  
 st.sidebar.write("**Kontakt:** 278331@vutbr.cz")  
-st.sidebar.write("**Technologie:** Python, Streamlit, Matplotlib, ReportLab")
+st.sidebar.write("**Technologie:** Python, Streamlit, Matplotlib, FPDF")
 
 # --- Export do PDF ---
 def create_pdf():
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer)
-    styles = getSampleStyleSheet()
-    story = []
-    story.append(Paragraph("Body na kružnici – Výstup", styles["Title"]))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph(f"Střed: ({x0}, {y0})", styles["Normal"]))
-    story.append(Paragraph(f"Poloměr: {r} m", styles["Normal"]))
-    story.append(Paragraph(f"Počet bodů: {n}", styles["Normal"]))
-    story.append(Paragraph(f"Barva bodů: {barva}", styles["Normal"]))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph("Autor: Jakub Říman", styles["Normal"]))
-    story.append(Paragraph("Kontakt: 278331@vutbr.cz", styles["Normal"]))
-    doc.build(story)
-    buffer.seek(0)
-    return buffer
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    pdf.cell(200, 10, txt="Body na kružnici – Výstup", ln=True, align="C")
+    pdf.ln(10)
+    pdf.cell(200, 10, txt=f"Střed: ({x0}, {y0})", ln=True)
+    pdf.cell(200, 10, txt=f"Poloměr: {r} m", ln=True)
+    pdf.cell(200, 10, txt=f"Počet bodů: {n}", ln=True)
+    pdf.cell(200, 10, txt=f"Barva bodů: {barva}", ln=True)
+    pdf.ln(10)
+    pdf.cell(200, 10, txt="Autor: Jakub Říman", ln=True)
+    pdf.cell(200, 10, txt="Kontakt: 278331@vutbr.cz", ln=True)
+
+    # výstup do paměti
+    pdf_bytes = pdf.output(dest="S").encode("latin-1")
+    return io.BytesIO(pdf_bytes)
 
 if st.button("📄 Exportovat do PDF"):
     pdf_bytes = create_pdf()
@@ -70,4 +70,3 @@ if st.button("📄 Exportovat do PDF"):
         file_name="body_na_kruznici.pdf",
         mime="application/pdf"
     )
-
